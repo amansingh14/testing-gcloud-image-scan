@@ -12,18 +12,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
-
-      - name: Authenticate gcloud
-        run: |
-          printf '%s' "${{ vars.KEY }}" > /tmp/key.json
-          gcloud auth activate-service-account --key-file=/tmp/key.json
-          gcloud config set project ${{ vars.GCP_PROJECT_ID }}
+          credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
 
       - name: Read image destination from config.yaml
         id: read-destination
