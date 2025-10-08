@@ -43,7 +43,7 @@ jobs:
 
           # Run on-demand vulnerability scan
           SCAN_NAME=$(gcloud artifacts docker images scan "$IMAGE_URI_WITH_DIGEST" \
-            --location=asia --format='value(response.scan)' --quiet --remote )
+            --location=asia --format='value(response.scan)' --quiet)
 
           echo "Waiting for scan results..."
           gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
