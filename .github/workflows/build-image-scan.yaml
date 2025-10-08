@@ -110,7 +110,7 @@ jobs:
       - name: Upload report to GCS
         if: always()
         run: |
-          BUCKET=${{ secrets.VULN_BUCKET }}
+          BUCKET="fea-scan-report"
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           REPORT_PATH="reports/${{ github.run_id }}-${TIMESTAMP}.json"
           echo "☁️ Uploading vulnerability report to: gs://$BUCKET/$REPORT_PATH"
