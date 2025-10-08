@@ -84,7 +84,7 @@ jobs:
               (((.relatedUrls // .vulnerability.relatedUrls // []) | map(.url) | first) // "-")
             ]
           | @tsv
-          ' v.json |
+          ' vuln-report.json |
           awk -F'\t' 'BEGIN {
             printf "%-8s | %-16s | %-28s | %-14s | %-14s | %-6s | %s\n",
             "SEV","CVE/ID","PACKAGE","AFFECTED","FIXED","TYPE","URL"
