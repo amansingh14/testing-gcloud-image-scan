@@ -72,12 +72,12 @@ jobs:
            # jq -r 'limit(10; .[] | [.vulnerability.effectiveSeverity, .vulnerability.shortDescription, .packageIssue[0].affectedPackage] | @tsv)' vuln-report.json | \
            # header
           jq -r '
-            # handle both array or single object
-            ( (type=="array") then . else [.] end )
+            # Handle both array and single-object JSONs
+            (if type == "array" then . else [.] end)
             | .[]
-            | ($.vulnerability.effectiveSeverity // "-") as $sev
-            | ($.vulnerability.shortDescription // ($.noteName | tostring | split("/") | last) // "-") as $id
-            | ($.vulnerability.packageIssue // [])[0] as $pi
+            | (.vulnerability.effectiveSeverity // "-") as $sev
+            | (.vulnerability.shortDescription // (.noteName | tostring | split("/") | last) // "-") as $id
+            | (.vulnerability.packageIssue // [])[0] as $pi
             | [
                 $sev,
                 $id,
