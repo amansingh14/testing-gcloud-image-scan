@@ -72,18 +72,22 @@ jobs:
            # jq -r 'limit(10; .[] | [.vulnerability.effectiveSeverity, .vulnerability.shortDescription, .packageIssue[0].affectedPackage] | @tsv)' vuln-report.json | \
            # header
           jq -r '
-          .[] 
-          | .vulnerability.packageIssue[]
-          | [
-              (.effectiveSeverity // .vulnerability.effectiveSeverity // "-"),
-              (.vulnerability.shortDescription // (.noteName | split("/") | last) // "-"),
-              (.affectedPackage // "-"),
-              (.affectedVersion.fullName // "-"),
-              (.fixedVersion.fullName // "-"),
-              (.packageType // "-"),
-              (((.relatedUrls // .vulnerability.relatedUrls // []) | map(.url) | first) // "-")
-            ]
-          | @tsv
+            # handle both array or single object
+            ( (type=="array") then . else [.] end )
+            | .[]
+            | ($.vulnerability.effectiveSeverity // "-") as $sev
+            | ($.vulnerability.shortDescription // ($.noteName | tostring | split("/") | last) // "-") as $id
+            | ($.vulnerability.packageIssue // [])[0] as $pi
+            | [
+                $sev,
+                $id,
+                ($pi.affectedPackage // "-"),
+                ($pi.affectedVersion.fullName // "-"),
+                ($pi.fixedVersion.fullName // "-"),
+                ($pi.packageType // "-"),
+                (((.vulnerability.relatedUrls // []) | map(.url) | first) // "-")
+              ]
+            | @tsv
           ' vuln-report.json |
           awk -F'\t' 'BEGIN {
             printf "%-8s | %-16s | %-28s | %-14s | %-14s | %-6s | %s\n",
