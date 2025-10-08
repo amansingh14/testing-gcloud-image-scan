@@ -17,6 +17,9 @@ jobs:
         uses: 'google-github-actions/auth@v3'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
+      - id: 'sdk'
+        name: setup gcloud SDK
+        uses: 'google-github-actions/setup-gcloud@v3'
 
       - name: Read image destination from config.yaml
         id: read-destination
@@ -29,7 +32,7 @@ jobs:
         id: scan
         run: |
           set -e
-          sudo apt-get install google-cloud-cli-local-extract -y
+        
           IMAGE_URI="${DESTINATION}"
           echo "🔍 Scanning image: $IMAGE_URI"
 
