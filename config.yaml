@@ -2,7 +2,7 @@
 steps:
   - name: gcr.op/kaniko-project/executor:latest
     args:
-      - --destination="asia-south1-docker.pkg.dev/feaoverseas-1729806250833/testing/test-image:1.0.1
+      - --destination="asia-south1-docker.pkg.dev/feaoverseas-1729806250833/testing/metabase:1.0.0"
       - --cache=true
       - --compressed-caching=false
       - --cache-type-layers=true
