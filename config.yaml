@@ -1,0 +1,14 @@
+
+steps:
+  - name: gcr.op/kaniko-project/executor:latest
+    args:
+      - --destination="asia-south1-docker.pkg.dev/feaoverseas-1729806250833/testing/test-image:1.0.1
+      - --cache=true
+      - --compressed-caching=false
+      - --cache-type-layers=true
+      - --dockerfile=docker/Dockerfile
+      - --single-snapshot
+      - --build-arg
+      - --BASE_IMAGE
+      - --build-arg
+      - WORKSPACE=

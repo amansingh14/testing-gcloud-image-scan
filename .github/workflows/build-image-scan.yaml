@@ -1,0 +1,92 @@
+name: Scan Docker Image for Vulnerabilities
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Read image destination from config.yaml
+        id: read-destination
+        run: |
+          DEST=$(grep -- '--destination=' config.yaml | sed 's/.*--destination="\{0,1\}\([^"]*\)"\{0,1\}.*/\1/')
+          echo "📦 Destination found: $DEST"
+          echo "DESTINATION=$DEST" >> $GITHUB_ENV
+
+      - name: Scan image and show vulnerabilities
+        id: scan
+        run: |
+          set -e
+
+          IMAGE_URI="${DESTINATION}"
+          echo "🔍 Scanning image: $IMAGE_URI"
+
+          # Get image digest
+          DIGEST=$(gcloud container images describe "$IMAGE_URI" --format='value(image_summary.digest)')
+          IMAGE_URI_WITH_DIGEST="$IMAGE_URI@${DIGEST}"
+          echo "Resolved Image: $IMAGE_URI_WITH_DIGEST"
+
+          # Run on-demand vulnerability scan
+          SCAN_NAME=$(gcloud artifacts docker images scan "$IMAGE_URI_WITH_DIGEST" \
+            --location=asia --format='value(response.scan)')
+
+          echo "Waiting for scan results..."
+          gcloud artifacts docker images list-vulnerabilities "$SCAN_NAME" \
+            --format=json > vuln-report.json
+
+          echo "============================"
+          echo "🧪 Vulnerability Summary"
+          echo "============================"
+
+          TOTAL=$(jq length vuln-report.json)
+          CRITICAL=$(jq '[.[] | select(.vulnerability.effectiveSeverity=="CRITICAL")] | length' vuln-report.json)
+          HIGH=$(jq '[.[] | select(.vulnerability.effectiveSeverity=="HIGH")] | length' vuln-report.json)
+          MEDIUM=$(jq '[.[] | select(.vulnerability.effectiveSeverity=="MEDIUM")] | length' vuln-report.json)
+          LOW=$(jq '[.[] | select(.vulnerability.effectiveSeverity=="LOW")] | length' vuln-report.json)
+
+          echo "Total: $TOTAL"
+          echo "Critical: $CRITICAL"
+          echo "High: $HIGH"
+          echo "Medium: $MEDIUM"
+          echo "Low: $LOW"
+
+          echo ""
+          echo "============================"
+          echo "📋 Top Vulnerabilities"
+          echo "============================"
+          jq -r 'limit(10; .[] | [.vulnerability.effectiveSeverity, .vulnerability.shortDescription, .packageIssue[0].affectedPackage] | @tsv)' vuln-report.json | \
+          awk -F'\t' '{printf "%-10s | %-60s | %s\n", $1, $2, $3}'
+
+          echo "CRITICAL=$CRITICAL" >> $GITHUB_ENV
+          echo "HIGH=$HIGH" >> $GITHUB_ENV
+          echo "IMAGE_URI_WITH_DIGEST=$IMAGE_URI_WITH_DIGEST" >> $GITHUB_ENV
+
+          if [[ "$CRITICAL" -gt 0 || "$HIGH" -gt 0 ]]; then
+            echo "❌ Found high/critical vulnerabilities!"
+            exit 1
+          else
+            echo "✅ No high or critical vulnerabilities found."
+          fi
+
+      - name: Upload report to GCS
+        if: always()
+        run: |
+          BUCKET=${{ secrets.VULN_BUCKET }}
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          REPORT_PATH="reports/${{ github.run_id }}-${TIMESTAMP}.json"
+          echo "☁️ Uploading vulnerability report to: gs://$BUCKET/$REPORT_PATH"
+          gsutil cp vuln-report.json gs://$BUCKET/$REPORT_PATH
+          echo "✅ Uploaded: gs://$BUCKET/$REPORT_PATH"
