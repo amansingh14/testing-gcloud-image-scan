@@ -1,13 +1,13 @@
 name: Scan Docker Image for Vulnerabilities
 
 on:
-  workflow_dispatch:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   scan:
     runs-on: ubuntu-latest
+    if: github.event.review.state == 'approved
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
