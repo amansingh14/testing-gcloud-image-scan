@@ -1,4 +1,4 @@
 # TESINT WORKFLOW
 
 
-testing -b-b-b
+testing -b-b-b-b-b-b
