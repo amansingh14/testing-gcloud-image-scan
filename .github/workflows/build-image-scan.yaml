@@ -99,12 +99,10 @@ jobs:
           echo "============================"
           echo "📋 Top Vulnerabilities"
           echo "============================"
-           # jq -r 'limit(10; .[] | [.vulnerability.effectiveSeverity, .vulnerability.shortDescription, .packageIssue[0].affectedPackage] | @tsv)' vuln-report.json | \
-           # header
-          jq -r '
             # Handle both array and single-object JSONs
             (if type == "array" then . else [.] end)
             | .[]
+            | select(.vulnerability.effectiveSeverity == "HIGH or .vulnerability.effectiveSeverity == "CRITICAL")
             | (.vulnerability.effectiveSeverity // "-") as $sev
             | (.vulnerability.shortDescription // (.noteName | tostring | split("/") | last) // "-") as $id
             | (.vulnerability.packageIssue // [])[0] as $pi
