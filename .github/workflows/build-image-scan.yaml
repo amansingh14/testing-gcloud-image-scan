@@ -4,8 +4,8 @@ on:
   pull_request:
     branch:
       - master
-    path:
-      - 'services/test1/**'
+    paths:
+      - 'services/test1/**/*'
       - '.github/workflows/build-image-scan.yaml'
     types: [opened, synchronize, reopened, ready_for_review]
 
