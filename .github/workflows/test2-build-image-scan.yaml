@@ -57,7 +57,7 @@ jobs:
       - name: Read image destination from config.yaml
         id: read-destination
         run: |
-          DEST=$(grep -- '--destination=' config.yaml | sed 's/.*--destination="\{0,1\}\([^"]*\)"\{0,1\}.*/\1/')
+          DEST=$(grep -- '--destination=' services/test2/config.yaml | sed 's/.*--destination="\{0,1\}\([^"]*\)"\{0,1\}.*/\1/')
           echo "📦 Destination found: $DEST"
           echo "DESTINATION=$DEST" >> $GITHUB_ENV
 
@@ -103,7 +103,6 @@ jobs:
           echo "📋 Top Vulnerabilities"
           echo "============================"
           jq -r '
-            # Handle both array and single-object JSONs
             (if type == "array" then . else [.] end)
             | .[]
             | select(.vulnerability.effectiveSeverity == "HIGH" or .vulnerability.effectiveSeverity == "CRITICAL")
@@ -126,8 +125,8 @@ jobs:
             "SEV","CVE/ID","PACKAGE","AFFECTED","FIXED","TYPE","URL"
             printf "--------|------------------|------------------------------|----------------|----------------|--------|----------------------------------------\n"
           }
-          { printf "%-8s | %-16s | %-28s | %-14s | %-14s | %-6s | %s\n",$1,$2,$3,$4,$5,$6,$7 }'
-
+          { printf "%-8s | %-16s | %-28s | %-14s | %-14s | %-6s | %s\n",$1,$2,$3,$4,$5,$6,$7 }
+          { printf "--------|------------------|------------------------------|----------------|----------------|--------|----------------------------------------\n"}' 
           echo "CRITICAL=$CRITICAL" >> $GITHUB_ENV
           echo "HIGH=$HIGH" >> $GITHUB_ENV
           echo "IMAGE_URI_WITH_DIGEST=$IMAGE_URI_WITH_DIGEST" >> $GITHUB_ENV
