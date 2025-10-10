@@ -100,6 +100,7 @@ jobs:
           echo "📋 Top Vulnerabilities"
           echo "============================"
             # Handle both array and single-object JSONs
+          jq -r '
             (if type == "array" then . else [.] end)
             | .[]
             | select(.vulnerability.effectiveSeverity == "HIGH" or .vulnerability.effectiveSeverity == "CRITICAL")
@@ -122,8 +123,8 @@ jobs:
             "SEV","CVE/ID","PACKAGE","AFFECTED","FIXED","TYPE","URL"
             printf "--------|------------------|------------------------------|----------------|----------------|--------|----------------------------------------\n"
           }
-          { printf "%-8s | %-16s | %-28s | %-14s | %-14s | %-6s | %s\n",$1,$2,$3,$4,$5,$6,$7 }'
-
+          { printf "%-8s | %-16s | %-28s | %-14s | %-14s | %-6s | %s\n",$1,$2,$3,$4,$5,$6,$7 }
+          {printf "--------|------------------|------------------------------|----------------|----------------|--------|----------------------------------------\n"}' 
           echo "CRITICAL=$CRITICAL" >> $GITHUB_ENV
           echo "HIGH=$HIGH" >> $GITHUB_ENV
           echo "IMAGE_URI_WITH_DIGEST=$IMAGE_URI_WITH_DIGEST" >> $GITHUB_ENV
