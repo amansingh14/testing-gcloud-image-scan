@@ -35,8 +35,7 @@ jobs:
           echo "on Pull request hold for job B"
   scan:
     runs-on: ubuntu-latest
-    if: >
-      if: needs.changes.outputs.hit == 'true'
+    if: needs.changes.outputs.hit == 'true'
     environment: Apporval-to-scan
     steps:
       - name: Checkout code
