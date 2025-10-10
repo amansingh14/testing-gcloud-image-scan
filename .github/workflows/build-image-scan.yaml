@@ -6,7 +6,7 @@ on:
       - master
     path:
       - 'services/test1/**/*'
-      - '.github/workflows/test2-build-image-scan.yaml'
+      - '.github/workflows/build-image-scan.yaml'
   pull_request_review:
     types:
       - submitted
