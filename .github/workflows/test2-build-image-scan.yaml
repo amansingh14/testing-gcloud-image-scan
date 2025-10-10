@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ master ]
     paths:
-      - 'services/test2/**'
+      - 'services/test2/**/*'
       - '.github/workflows/test2-build-image-scan.yaml'
     types: [opened, synchronize, reopened, ready_for_review]
 
