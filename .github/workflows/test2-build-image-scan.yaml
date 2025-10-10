@@ -8,14 +8,9 @@ on:
       - '.github/workflows/test2-build-image-scan.yaml'
     types: [opened, synchronize, reopened, ready_for_review]
 
-concurrency:
-  group: pr-${{ github.event.pull_request.number }}-test1
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
       - name: job b
         run: |
