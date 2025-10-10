@@ -8,34 +8,17 @@ on:
       - 'services/test1/**'
       - '.github/workflows/build-image-scan.yaml'
     types: [opened, synchronize, reopened, ready_for_review]
-  pull_request_review:
-    types: [submitted]
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      hit: ${{ steps.filter.outputs.hit }}
-    steps:
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          filters: |
-            hit:
-              - 'services/test1/**'
-              - '.github/workflows/build-image-scan.yaml'
   build:
     runs-on: ubuntu-latest
-    needs: [changes]
-    if: needs.changes.outputs.hit == 'true' && github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request'
     steps:
       - name: job a
         run: |
           echo "on Pull request hold for job B"
   scan:
     runs-on: ubuntu-latest
-    if: needs.changes.outputs.hit == 'true'
     environment: Apporval-to-scan
     steps:
       - name: Checkout code
