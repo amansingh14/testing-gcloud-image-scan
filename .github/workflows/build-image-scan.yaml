@@ -54,7 +54,7 @@ jobs:
       - name: Read image destination from config.yaml
         id: read-destination
         run: |
-          DEST=$(grep -- '--destination=' config.yaml | sed 's/.*--destination="\{0,1\}\([^"]*\)"\{0,1\}.*/\1/')
+          DEST=$(grep -- '--destination=' services/test1/config.yaml | sed 's/.*--destination="\{0,1\}\([^"]*\)"\{0,1\}.*/\1/')
           echo "📦 Destination found: $DEST"
           echo "DESTINATION=$DEST" >> $GITHUB_ENV
 
