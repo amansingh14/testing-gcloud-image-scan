@@ -39,7 +39,7 @@ jobs:
     if: >
       needs.changes.outputs.test1 == 'true' &&
       (
-        github.event_name == 'pull_request' ||
+        github.event_name == 'pull_request' &&
         (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
       )
     steps:
