@@ -1,11 +1,11 @@
-name: Scan Docker Image for Vulnerabilities TEST1
+name: Scan Docker Image for Vulnerabilities TEST2
 
 on:
   pull_request:
     branch:
       - master
     path:
-      - 'services/test1/**/*'
+      - 'services/test2/**/*'
       - '.github/workflows/test2-build-image-scan.yaml'
   pull_request_review:
     types:
