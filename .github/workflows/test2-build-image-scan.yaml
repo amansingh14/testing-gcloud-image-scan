@@ -21,7 +21,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           filters: |
-            test1:
+            test2:
               - 'services/test2/**'
               - '.github/workflows/test2-build-image-scan.yaml'
   build:
