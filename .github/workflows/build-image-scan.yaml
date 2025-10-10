@@ -15,20 +15,20 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      test1: ${{ steps.filter.outputs.test1 }}
+      test1: ${{ steps.filter.outputs.hit }}
     steps:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           filters: |
-            test1:
+            hit:
               - 'services/test1/**'
               - '.github/workflows/build-image-scan.yaml'
   build:
     runs-on: ubuntu-latest
     needs: [changes]
-    if: needs.changes.outputs.test1 == 'true' && github.event_name == 'pull_request'
+    if: needs.changes.outputs.hit == 'true' && github.event_name == 'pull_request'
     steps:
       - name: job a
         run: |
@@ -36,11 +36,36 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     needs: [ changes ]
-    if: >
-      needs.changes.outputs.test1 == 'true' && github.event_name == 'pull_request_review' && github.event.review.state == 'approved'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Require approvals before proceeding
+        id: approvals
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: pr.base.repo.owner.login,
+              repo: pr.base.repo.name,
+              pull_number: pr.number,
+              per_page: 200
+            });
+            // Count unique APPROVED reviewers (ignore dismissed)
+            const approved = new Set(
+              reviews.filter(r => r.state === 'APPROVED').map(r => r.user.login)
+            );
+            const REQUIRED = 1; // <-- change if you require 2+
+            core.info(`Approvals: ${approved.size} (need ${REQUIRED})`);
+            core.setOutput('ok', String(approved.size >= REQUIRED));
+
+      - name: Stop until approved
+        if: steps.approvals.outputs.ok != 'true'
+        run: |
+          echo "Not enough approvals yet; skipping scan."
+          exit 0
 
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
